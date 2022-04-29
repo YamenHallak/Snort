@@ -1,0 +1,25 @@
+We note the follwoing traffic packets:
+
+21:30:58.973061 IP 192.168.18.129.47242 > 192.168.18.173.21: Flags [P.], seq 13:25, ack 62, win 229, options [nop,nop,TS val 702072 ecr 242832], length 12: FTP: PASS admin
+	0x0000:  4500 0040 dfe4 4000 4006 b454 c0a8 1281  E..@..@.@..T....
+	0x0010:  c0a8 12ad b88a 0015 eb09 69e8 d5fb 2532  ..........i...%2
+	0x0020:  8018 00e5 bc93 0000 0101 080a 000a b678  ...............x
+	0x0030:  0003 b490 5041 5353 2061 646d 696e 0d0a  ....PASS.admin..
+
+
+21:30:58.863221 IP 192.168.18.129.47240 > 192.168.18.173.21: Flags [P.], seq 1:13, ack 28, win 229, options [nop,nop,TS val 702044 ecr 242798], length 12: FTP: USER admin
+	0x0000:  4500 0040 129c 4000 4006 819d c0a8 1281  E..@..@.@.......
+	0x0010:  c0a8 12ad b888 0015 1c1a a49b d94d 678d  .............Mg.
+	0x0020:  8018 00e5 1452 0000 0101 080a 000a b65c  .....R.........\
+	0x0030:  0003 b46e 5553 4552 2061 646d 696e 0d0a  ...nUSER.admin..
+
+
+So, We'll define the following REGEX Rule:
+
+alert tcp any any -> any 21 (msg:"Passing User Name or Password in Clear Text!! Maybe Someone Using FTP or 'Hydra' Tool Based on FTP Protocol!"; pcre:"/\b(USER|PASS)\b .*/"; sid:1000016; rev:1;)
+
+
+
+And thus, we'll have this alert:
+
+01/25-21:30:58.973063 [**] [1:1000016:1] "Passing User Name or Password in Clear Text!! Maybe Someone Using FTP or 'Hydra' Tool Based on FTP Protocol!" [**] [Priority: 0] {TCP} 192.168.18.129:47242 -> 192.168.18.173:21
