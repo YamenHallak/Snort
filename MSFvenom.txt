@@ -947,8 +947,7 @@ alert tcp any any -> any any (msg:"MSFVENOM Traffic Detected_6!"; content:"|57 5
 
 
 
-
-تم التجريب من جديد فأطلق النظام النيبهات التالية حسب سمات التدفق الشكبي السابقة (تم بترتيبها حسب التنبيهات):
+The system was tested again, and the system triggered the following alerts according to the previous network flow features (they were arranged according to the alerts):
 
 01/26-05:09:27.710405 [**] [1:1000025:1] "MSFVENOM Traffic Detected_1!" [**] [Priority: 0] {TCP} 192.168.18.129:4444 -> 192.168.18.173:1429
 01/26-05:09:27.883955 [**] [1:1000021:1] "MSFVENOM Traffic Detected_2!" [**] [Priority: 0] {TCP} 192.168.18.129:4444 -> 192.168.18.173:1429
