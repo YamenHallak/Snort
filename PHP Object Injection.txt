@@ -1,19 +1,19 @@
-عند الدخول من حاسوب المهاجم لل btslab لحاسوب الضحية، ثم إلى Injection ثم إلى PHP Code Injection
-ثم في شريط المستعرض نجد:
+When entering from the attacker's computer the btslab to the victim's computer, then to Injection and then to PHP Code Injection
+
+Then in the browser bar we find:
 http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:4:"Java";i:1;s:1:"C";i:2;s:4:"Perl";}
-بحيث 4 هو طول المحارف السلسلة المحرفية Java
-نعدله مثلاً في الشكل: نعدل ال 6 لتصبح Delphi
+
+So that 4 is the length of the Java character string
+We modify it, for example, in the figure: we modify the 6 to become Delphi
 http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:"Delphi";i:1;s:1:"C";i:2;s:4:"Perl";}
 
-نعرّف التعبير النظامي التالي:
-
+We define the following regular expression:
 .+=[a-z]+\:[0-9]+\:\{([a-zA-Z0-9]+\:[0-9]+(\:\"[a-zA-Z0-9]+\")?\;)+\}
 
-
-عند تحليل المرور الشبكي أثناء التعامل مع الرابط التالي:
+When analyzing network traffic while dealing with the following link:
 http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:"Delphi";i:1;s:1:"C";i:2;s:4:"Perl";}
 
-يمكن تمييز الطرد التالي الذي تمّ إرساله من 129 إلى 173:
+The following packet sent from 129 to 173 can be distinguished:
 
 00:39:03.415421 IP 192.168.18.129.34066 > 192.168.18.173.80: Flags [P.], seq 1:455, ack 1, win 29200, options [nop,nop,TS val 24258851 ecr 9841368], length 454: HTTP: GET /btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:%22Delphi%22;i:1;s:1:%22C%22;i:2;s:4:%22Perl%22;} HTTP/1.1
 	0x0000:  4500 01fa 896d 4000 4006 0912 c0a8 1281  E....m@.@.......
@@ -51,27 +51,20 @@ http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:"Delp
 
 
 
-بحيث %22 هي "
+so that 22% is "
 
 
 
 
-
-نعرّف القاعدة التالية:
+We define the following rule:
 alert tcp any any -> any any (msg:"PHP Object Injection Possible Attack!"; pcre:"/.+=[a-z]+\:[0-9]+\:\{([a-zA-Z0-9]+\:[0-9]+(\:%22[a-zA-Z0-9]+%22)?\;)+\}/"; sid:1000036; rev:1;)
 
 
 
 
-ليظهر لنا التنبيه التالي:
+The following alert appears:
 01/27-00:39:03.415425 [**] [1:1000036:1] "PHP Object Injection Possible Attack!" [**] [Priority: 0] {TCP} 192.168.18.129:34066 -> 192.168.18.173:80
 
 
 
 
-
-
-ملاحظة هامة: من الممكن أن يتغير ال regex حسب كل موقع
-ومن الممكن لنا وضع ال regex التالي بدلاً عن السابق:
-/([a-zA-Z0-9]+:[A-Za-z0-9]+(\:\"[a-zA-Z0-9]+\")*\;)+/
-بحيث يطابق فقط ماداخل ال {}
