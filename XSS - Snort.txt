@@ -1,0 +1,127 @@
+عند الدخول من حاسوب المهاجم لل btslab لحاسوب الضحية، ثم إلى ال XSS ثم Challange1، ثم نكتب
+<script> alert ("Hello"); </script>
+ونضغط الزر، فيتم اختراق الموقع بهذه الثغرة، إلا أن ال IDS فشل في كشف هذه الهجمة رغم تكرار التجربة أكثر من مرة
+
+
+من خلال تحليل المرور الشبكي، نلاحظ التالي:
+
+14:14:30.368892 IP 192.168.18.129.33454 > 192.168.18.173.80: Flags [P.], seq 1:601, ack 1, win 29200, options [nop,nop,TS val 13898148 ecr 5714166], length 600: HTTP: GET /btslab/vulnerability/xss/xss1.php?keyword=%3Cscript%3E+alert%28%22Hello%22%29%3B+%3C%2Fscript%3E&Search=Search HTTP/1.1
+	0x0000:  4500 028c 612f 4000 4006 30be c0a8 1281  E...a/@.@.0.....
+	0x0010:  c0a8 12ad 82ae 0050 a49e 708e 1bc8 43a9  .......P..p...C.
+	0x0020:  8018 7210 82d2 0000 0101 080a 00d4 11a4  ..r.............
+	0x0030:  0057 30f6 4745 5420 2f62 7473 6c61 622f  .W0.GET./btslab/
+	0x0040:  7675 6c6e 6572 6162 696c 6974 792f 7873  vulnerability/xs
+	0x0050:  732f 7873 7331 2e70 6870 3f6b 6579 776f  s/xss1.php?keywo
+	0x0060:  7264 3d25 3343 7363 7269 7074 2533 452b  rd=%3Cscript%3E+
+	0x0070:  616c 6572 7425 3238 2532 3248 656c 6c6f  alert%28%22Hello
+	0x0080:  2532 3225 3239 2533 422b 2533 4325 3246  %22%29%3B+%3C%2F
+	0x0090:  7363 7269 7074 2533 4526 5365 6172 6368  script%3E&Search
+	0x00a0:  3d53 6561 7263 6820 4854 5450 2f31 2e31  =Search.HTTP/1.1
+	0x00b0:  0d0a 486f 7374 3a20 3139 322e 3136 382e  ..Host:.192.168.
+	0x00c0:  3138 2e31 3733 0d0a 5573 6572 2d41 6765  18.173..User-Age
+	0x00d0:  6e74 3a20 4d6f 7a69 6c6c 612f 352e 3020  nt:.Mozilla/5.0.
+	0x00e0:  2858 3131 3b20 4c69 6e75 7820 7838 365f  (X11;.Linux.x86_
+	0x00f0:  3634 3b20 7276 3a34 332e 3029 2047 6563  64;.rv:43.0).Gec
+	0x0100:  6b6f 2f32 3031 3030 3130 3120 4669 7265  ko/20100101.Fire
+	0x0110:  666f 782f 3433 2e30 2049 6365 7765 6173  fox/43.0.Iceweas
+	0x0120:  656c 2f34 332e 302e 340d 0a41 6363 6570  el/43.0.4..Accep
+	0x0130:  743a 2074 6578 742f 6874 6d6c 2c61 7070  t:.text/html,app
+	0x0140:  6c69 6361 7469 6f6e 2f78 6874 6d6c 2b78  lication/xhtml+x
+	0x0150:  6d6c 2c61 7070 6c69 6361 7469 6f6e 2f78  ml,application/x
+	0x0160:  6d6c 3b71 3d30 2e39 2c2a 2f2a 3b71 3d30  ml;q=0.9,*/*;q=0
+	0x0170:  2e38 0d0a 4163 6365 7074 2d4c 616e 6775  .8..Accept-Langu
+	0x0180:  6167 653a 2065 6e2d 5553 2c65 6e3b 713d  age:.en-US,en;q=
+	0x0190:  302e 350d 0a41 6363 6570 742d 456e 636f  0.5..Accept-Enco
+	0x01a0:  6469 6e67 3a20 677a 6970 2c20 6465 666c  ding:.gzip,.defl
+	0x01b0:  6174 650d 0a52 6566 6572 6572 3a20 6874  ate..Referer:.ht
+	0x01c0:  7470 3a2f 2f31 3932 2e31 3638 2e31 382e  tp://192.168.18.
+	0x01d0:  3137 332f 6274 736c 6162 2f76 756c 6e65  173/btslab/vulne
+	0x01e0:  7261 6269 6c69 7479 2f78 7373 2f78 7373  rability/xss/xss
+	0x01f0:  312e 7068 703f 6b65 7977 6f72 643d 2533  1.php?keyword=%3
+	0x0200:  4373 6372 6970 7425 3345 2b61 6c65 7274  Cscript%3E+alert
+	0x0210:  2532 3825 3232 4865 6c6c 6f25 3232 2532  %28%22Hello%22%2
+	0x0220:  3925 3342 2b25 3343 2532 4673 6372 6970  9%3B+%3C%2Fscrip
+	0x0230:  7425 3345 2653 6561 7263 683d 5365 6172  t%3E&Search=Sear
+	0x0240:  6368 0d0a 436f 6f6b 6965 3a20 5048 5053  ch..Cookie:.PHPS
+	0x0250:  4553 5349 443d 6237 756f 3665 7276 3264  ESSID=b7uo6erv2d
+	0x0260:  6f64 3071 3631 6e34 3963 6431 6d35 6b31  od0q61n49cd1m5k1
+	0x0270:  0d0a 436f 6e6e 6563 7469 6f6e 3a20 6b65  ..Connection:.ke
+	0x0280:  6570 2d61 6c69 7665 0d0a 0d0a            ep-alive....
+
+
+نعرّف القاعدة التالية:
+
+alert tcp any any -> any any (msg:"Cross Site Scripting (XSS) Attack - Script on Input Filed"; content:"<script>";content:"</script>"; sid:1000030; rev:1;)
+وعند الهجوم يظهر التنبيه:
+01/26-14:14:30.382626 [**] [1:1000030:1] "Cross Site Scripting (XSS) Attack - Script on Input Filed" [**] [Priority: 0] {TCP} 192.168.18.173:80 -> 192.168.18.129:33454
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+في ال challange2 الذي نقوم بتغيير لون الصفحة من خلال مسار مستعرض الانترنت، كذلك الأمر فشل ال IDS في كشف الهجوم
+http://localhost/btslab/vulnerability/xss/xss2.php?clr=%23000&Change=Change
+
+http://localhost/btslab/vulnerability/xss/xss2.php?clr=%23AAA&Change=Change
+
+
+من خلال تحليل المرور الشبكي، نلاحظ التالي:
+
+15:37:24.170815 IP 192.168.18.129.33570 > 192.168.18.173.80: Flags [P.], seq 1:406, ack 1, win 29200, options [nop,nop,TS val 14790564 ecr 6071195], length 405: HTTP: GET /btslab/vulnerability/xss/xss2.php?clr=%23AAA&Change=Change HTTP/1.1
+	0x0000:  4500 01c9 499d 4000 4006 4913 c0a8 1281  E...I.@.@.I.....
+	0x0010:  c0a8 12ad 8322 0050 b83e e639 0d55 8d85  .....".P.>.9.U..
+	0x0020:  8018 7210 42c9 0000 0101 080a 00e1 afa4  ..r.B...........
+	0x0030:  005c a39b 4745 5420 2f62 7473 6c61 622f  .\..GET./btslab/
+	0x0040:  7675 6c6e 6572 6162 696c 6974 792f 7873  vulnerability/xs
+	0x0050:  732f 7873 7332 2e70 6870 3f63 6c72 3d25  s/xss2.php?clr=%
+	0x0060:  3233 4141 4126 4368 616e 6765 3d43 6861  23AAA&Change=Cha
+	0x0070:  6e67 6520 4854 5450 2f31 2e31 0d0a 486f  nge.HTTP/1.1..Ho
+	0x0080:  7374 3a20 3139 322e 3136 382e 3138 2e31  st:.192.168.18.1
+	0x0090:  3733 0d0a 5573 6572 2d41 6765 6e74 3a20  73..User-Agent:.
+	0x00a0:  4d6f 7a69 6c6c 612f 352e 3020 2858 3131  Mozilla/5.0.(X11
+	0x00b0:  3b20 4c69 6e75 7820 7838 365f 3634 3b20  ;.Linux.x86_64;.
+	0x00c0:  7276 3a34 332e 3029 2047 6563 6b6f 2f32  rv:43.0).Gecko/2
+	0x00d0:  3031 3030 3130 3120 4669 7265 666f 782f  0100101.Firefox/
+	0x00e0:  3433 2e30 2049 6365 7765 6173 656c 2f34  43.0.Iceweasel/4
+	0x00f0:  332e 302e 340d 0a41 6363 6570 743a 2074  3.0.4..Accept:.t
+	0x0100:  6578 742f 6874 6d6c 2c61 7070 6c69 6361  ext/html,applica
+	0x0110:  7469 6f6e 2f78 6874 6d6c 2b78 6d6c 2c61  tion/xhtml+xml,a
+	0x0120:  7070 6c69 6361 7469 6f6e 2f78 6d6c 3b71  pplication/xml;q
+	0x0130:  3d30 2e39 2c2a 2f2a 3b71 3d30 2e38 0d0a  =0.9,*/*;q=0.8..
+	0x0140:  4163 6365 7074 2d4c 616e 6775 6167 653a  Accept-Language:
+	0x0150:  2065 6e2d 5553 2c65 6e3b 713d 302e 350d  .en-US,en;q=0.5.
+	0x0160:  0a41 6363 6570 742d 456e 636f 6469 6e67  .Accept-Encoding
+	0x0170:  3a20 677a 6970 2c20 6465 666c 6174 650d  :.gzip,.deflate.
+	0x0180:  0a43 6f6f 6b69 653a 2050 4850 5345 5353  .Cookie:.PHPSESS
+	0x0190:  4944 3d62 3775 6f36 6572 7632 646f 6430  ID=b7uo6erv2dod0
+	0x01a0:  7136 316e 3439 6364 316d 356b 310d 0a43  q61n49cd1m5k1..C
+	0x01b0:  6f6e 6e65 6374 696f 6e3a 206b 6565 702d  onnection:.keep-
+	0x01c0:  616c 6976 650d 0a0d 0a                   alive....
+
+
+
+نعرّف القاعدة التالية:
+alert tcp any any -> any any (msg:"Cross Site Scripting (XSS) Attack - URL Modify"; pcre:"/clr=[%][0-9a-fA-F]{5}[&]Change=Change/s"; sid:1000031; rev:1;)
+
+بحيث /s هي لمطابقة سطر واحد
+
+وعند الهجوم يظهر التنبيه:
+01/26-15:37:24.170820 [**] [1:1000031:1] "Cross Site Scripting (XSS) Attack - URL Modify" [**] [Priority: 0] {TCP} 192.168.18.129:33570 -> 192.168.18.173:80
+
+
+

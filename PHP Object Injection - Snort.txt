@@ -1,0 +1,77 @@
+عند الدخول من حاسوب المهاجم لل btslab لحاسوب الضحية، ثم إلى Injection ثم إلى PHP Code Injection
+ثم في شريط المستعرض نجد:
+http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:4:"Java";i:1;s:1:"C";i:2;s:4:"Perl";}
+بحيث 4 هو طول المحارف السلسلة المحرفية Java
+نعدله مثلاً في الشكل: نعدل ال 6 لتصبح Delphi
+http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:"Delphi";i:1;s:1:"C";i:2;s:4:"Perl";}
+
+نعرّف التعبير النظامي التالي:
+
+.+=[a-z]+\:[0-9]+\:\{([a-zA-Z0-9]+\:[0-9]+(\:\"[a-zA-Z0-9]+\")?\;)+\}
+
+
+عند تحليل المرور الشبكي أثناء التعامل مع الرابط التالي:
+http://localhost/btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:"Delphi";i:1;s:1:"C";i:2;s:4:"Perl";}
+
+يمكن تمييز الطرد التالي الذي تمّ إرساله من 129 إلى 173:
+
+00:39:03.415421 IP 192.168.18.129.34066 > 192.168.18.173.80: Flags [P.], seq 1:455, ack 1, win 29200, options [nop,nop,TS val 24258851 ecr 9841368], length 454: HTTP: GET /btslab/vulnerability/injection/obj.php?array=a:3:{i:0;s:6:%22Delphi%22;i:1;s:1:%22C%22;i:2;s:4:%22Perl%22;} HTTP/1.1
+	0x0000:  4500 01fa 896d 4000 4006 0912 c0a8 1281  E....m@.@.......
+	0x0010:  c0a8 12ad 8512 0050 484c a049 ff79 4da0  .......PHL.I.yM.
+	0x0020:  8018 7210 e4d3 0000 0101 080a 0172 2923  ..r..........r)#
+	0x0030:  0096 2ad8 4745 5420 2f62 7473 6c61 622f  ..*.GET./btslab/
+	0x0040:  7675 6c6e 6572 6162 696c 6974 792f 696e  vulnerability/in
+	0x0050:  6a65 6374 696f 6e2f 6f62 6a2e 7068 703f  jection/obj.php?
+	0x0060:  6172 7261 793d 613a 333a 7b69 3a30 3b73  array=a:3:{i:0;s
+	0x0070:  3a36 3a25 3232 4465 6c70 6869 2532 323b  :6:%22Delphi%22;
+	0x0080:  693a 313b 733a 313a 2532 3243 2532 323b  i:1;s:1:%22C%22;
+	0x0090:  693a 323b 733a 343a 2532 3250 6572 6c25  i:2;s:4:%22Perl%
+	0x00a0:  3232 3b7d 2048 5454 502f 312e 310d 0a48  22;}.HTTP/1.1..H
+	0x00b0:  6f73 743a 2031 3932 2e31 3638 2e31 382e  ost:.192.168.18.
+	0x00c0:  3137 330d 0a55 7365 722d 4167 656e 743a  173..User-Agent:
+	0x00d0:  204d 6f7a 696c 6c61 2f35 2e30 2028 5831  .Mozilla/5.0.(X1
+	0x00e0:  313b 204c 696e 7578 2078 3836 5f36 343b  1;.Linux.x86_64;
+	0x00f0:  2072 763a 3433 2e30 2920 4765 636b 6f2f  .rv:43.0).Gecko/
+	0x0100:  3230 3130 3031 3031 2046 6972 6566 6f78  20100101.Firefox
+	0x0110:  2f34 332e 3020 4963 6577 6561 7365 6c2f  /43.0.Iceweasel/
+	0x0120:  3433 2e30 2e34 0d0a 4163 6365 7074 3a20  43.0.4..Accept:.
+	0x0130:  7465 7874 2f68 746d 6c2c 6170 706c 6963  text/html,applic
+	0x0140:  6174 696f 6e2f 7868 746d 6c2b 786d 6c2c  ation/xhtml+xml,
+	0x0150:  6170 706c 6963 6174 696f 6e2f 786d 6c3b  application/xml;
+	0x0160:  713d 302e 392c 2a2f 2a3b 713d 302e 380d  q=0.9,*/*;q=0.8.
+	0x0170:  0a41 6363 6570 742d 4c61 6e67 7561 6765  .Accept-Language
+	0x0180:  3a20 656e 2d55 532c 656e 3b71 3d30 2e35  :.en-US,en;q=0.5
+	0x0190:  0d0a 4163 6365 7074 2d45 6e63 6f64 696e  ..Accept-Encodin
+	0x01a0:  673a 2067 7a69 702c 2064 6566 6c61 7465  g:.gzip,.deflate
+	0x01b0:  0d0a 436f 6f6b 6965 3a20 5048 5053 4553  ..Cookie:.PHPSES
+	0x01c0:  5349 443d 6237 756f 3665 7276 3264 6f64  SID=b7uo6erv2dod
+	0x01d0:  3071 3631 6e34 3963 6431 6d35 6b31 0d0a  0q61n49cd1m5k1..
+	0x01e0:  436f 6e6e 6563 7469 6f6e 3a20 6b65 6570  Connection:.keep
+	0x01f0:  2d61 6c69 7665 0d0a 0d0a                 -alive....
+
+
+
+بحيث %22 هي "
+
+
+
+
+
+نعرّف القاعدة التالية:
+alert tcp any any -> any any (msg:"PHP Object Injection Possible Attack!"; pcre:"/.+=[a-z]+\:[0-9]+\:\{([a-zA-Z0-9]+\:[0-9]+(\:%22[a-zA-Z0-9]+%22)?\;)+\}/"; sid:1000036; rev:1;)
+
+
+
+
+ليظهر لنا التنبيه التالي:
+01/27-00:39:03.415425 [**] [1:1000036:1] "PHP Object Injection Possible Attack!" [**] [Priority: 0] {TCP} 192.168.18.129:34066 -> 192.168.18.173:80
+
+
+
+
+
+
+ملاحظة هامة: من الممكن أن يتغير ال regex حسب كل موقع
+ومن الممكن لنا وضع ال regex التالي بدلاً عن السابق:
+/([a-zA-Z0-9]+:[A-Za-z0-9]+(\:\"[a-zA-Z0-9]+\")*\;)+/
+بحيث يطابق فقط ماداخل ال {}

@@ -1,0 +1,127 @@
+هجمة Slowloris
+
+من حاسوب المهاجم في ال metasploit نكتب التالي:
+use auxiliary/dos/http/slowloris
+set RHOST 192.168.18.173 (الضحية التي عليها ال web server مثلاً xampp)
+exploit
+بعد التنفيذ نلاحظ عند الضحية أن مستعرض الأنترنت لم يعد بمقدوره الوصول لل xampp server بمعنى أنه قد تم حجب الخدمة عنه
+
+
+من خلال ملاحظة تدفق المرور الشبكي نلاحظ تكرر عدد كبير من الطرود ذات الشكل:
+من 129 إلى 173
+إلى المنفذ 80
+نلاحظ ال flags:
+ACK
+PSH, ACK
+SYN
+
+
+10	0.053198	192.168.18.129	192.168.18.173	TCP	66	38586 → 80 [ACK] Seq=1 Ack=1 Win=29200 Len=0 TSval=26833706 TSecr=10871303
+
+11	0.065768	192.168.18.129	192.168.18.173	TCP	86	38586 → 80 [PSH, ACK] Seq=1 Ack=1 Win=29200 Len=20 TSval=26833709 TSecr=10871303 [TCP segment of a reassembled PDU]
+
+12	0.080861	192.168.18.129	192.168.18.173	TCP	74	38588 → 80 [SYN] Seq=0 Win=29200 Len=0 MSS=1460 SACK_PERM=1 TSval=26833713 TSecr=0 WS=128
+
+
+
+وعدد كبير من الطرود ذات الشكل:
+من 173 إلى 129
+من المنفذ 80
+نلاحظ ال flags:
+SYN,ACK
+
+13	0.081510	192.168.18.173	192.168.18.129	TCP	70	80 → 38588 [SYN, ACK] Seq=0 Ack=1 Win=8192 Len=0 MSS=1460 SACK_PERM=1 TSval=10871306 TSecr=26833713
+
+
+و
+من 173 إلى 129
+من المنفذ 80
+نلاحظ ال flags:
+ACK
+
+304	0.905505	192.168.18.173	192.168.18.129	TCP	66	80 → 42230 [ACK] Seq=1 Ack=177 Win=65160 Len=0 TSval=11470166 TSecr=28330825
+
+
+من 129 إلى 173
+إلى المنفذ 80
+نلاحظ ال flags:
+RST
+
+510	0.561333	192.168.18.129	192.168.18.173	TCP	60	42610 → 80 [RST] Seq=183 Win=0 Len=0
+
+
+
+
+
+
+
+من 173 إلى 129
+من المنفذ 80
+نلاحظ ال flags:
+FIN, ACK
+
+521	0.565670	192.168.18.173	192.168.18.129	TCP	66	80 → 42608 [FIN, ACK] Seq=530 Ack=187 Win=65160 Len=0 TSval=11516941 TSecr=28447799
+
+
+من 129 إلى 173
+إلى المنفذ 80
+نلاحظ ال flags:
+FIN, PSH, ACK
+569	0.599982	192.168.18.129	192.168.18.173	TCP	189	[TCP Spurious Retransmission] 42590 → 80 [FIN, PSH, ACK] Seq=22 Ack=1 Win=29200 Len=123 TSval=28447822 TSecr=11516930
+
+
+
+من 129 إلى 173
+إلى المنفذ 80
+نلاحظ ال flags:
+FIN ,ACK
+819	0.738995	192.168.18.129	192.168.18.173	TCP	66	42472 → 80 [FIN, ACK] Seq=188 Ack=1 Win=29200 Len=0 TSval=28447857 TSecr=11516918
+
+
+
+
+
+-------------------------------------------------------
+
+نعرف القواعد التالية:
+
+alert tcp any any -> any 80 (msg:"Slowloris Possible Attack! Flags: ACK"; flags:A; sid:1000038; rev:1;)
+
+alert tcp any any -> any 80 (msg:"Slowloris Possible Attack! Flags: PSH,ACK"; flags:PA; sid:1000039; rev:1;)
+
+alert tcp any any -> any 80 (msg:"Slowloris Possible Attack! Flags: SYN"; flags:S; sid:1000040; rev:1;)
+
+alert tcp any 80 -> any any (msg:"Slowloris Possible Attack! Flags: SYN,ACK"; flags:SA; sid:1000041; rev:1;)
+
+alert tcp any 80 -> any any (msg:"Slowloris Possible Attack! Flags: ACK"; flags:A; sid:1000042; rev:1;)
+
+alert tcp any any -> any 80 (msg:"Slowloris Possible Attack! Flags: RST"; flags:R; sid:1000043; rev:1;)
+
+alert tcp any 80 -> any any (msg:"Slowloris Possible Attack! Flags: FIN,ACK"; flags:FA; sid:1000044; rev:1;)
+
+alert tcp any any -> any 80 (msg:"Slowloris Possible Attack! Flags: FIN,PSH,ACK"; flags:FP,A; sid:1000045; rev:1;)
+
+alert tcp any any -> any 80 (msg:"Slowloris Possible Attack! Flags: FIN,ACK"; flags:FA; sid:1000046; rev:1;)
+
+
+نعيد الهجوم لنحصل على عدد التنبيهات التالية (عددها يتناسب مع طول الهجمة)، نصيغها بالشكل التالي:
+
+03/10-01:44:15.937214 [**] [1:1000038:1] "Slowloris Possible Attack! Flags: ACK" [**] [Priority: 0] {TCP} 192.168.18.129:45190 -> 192.168.18.173:80
+
+03/10-01:44:15.938367 [**] [1:1000039:1] "Slowloris Possible Attack! Flags: PSH,ACK" [**] [Priority: 0] {TCP} 192.168.18.129:45190 -> 192.168.18.173:80
+
+03/10-01:44:15.940467 [**] [1:1000040:1] "Slowloris Possible Attack! Flags: SYN" [**] [Priority: 0] {TCP} 192.168.18.129:45192 -> 192.168.18.173:80
+
+03/10-01:44:15.940710 [**] [1:1000041:1] "Slowloris Possible Attack! Flags: SYN,ACK" [**] [Priority: 0] {TCP} 192.168.18.173:80 -> 192.168.18.129:45192
+
+03/10-01:44:16.141373 [**] [1:1000042:1] "Slowloris Possible Attack! Flags: ACK" [**] [Priority: 0] {TCP} 192.168.18.173:80 -> 192.168.18.129:45190
+
+03/10-01:44:16.507380 [**] [1:1000043:1] "Slowloris Possible Attack! Flags: RST" [**] [Priority: 0] {TCP} 192.168.18.129:45414 -> 192.168.18.173:80
+
+03/10-01:44:16.507764 [**] [1:1000044:1] "Slowloris Possible Attack! Flags: FIN,ACK" [**] [Priority: 0] {TCP} 192.168.18.173:80 -> 192.168.18.129:45412
+
+03/10-01:44:16.518343 [**] [1:1000045:1] "Slowloris Possible Attack! Flags: FIN,PSH,ACK" [**] [Priority: 0] {TCP} 192.168.18.129:45406 -> 192.168.18.173:80
+
+03/10-01:44:16.576059 [**] [1:1000046:1] "Slowloris Possible Attack! Flags: FIN,ACK" [**] [Priority: 0] {TCP} 192.168.18.129:45330 -> 192.168.18.173:80
+
+
