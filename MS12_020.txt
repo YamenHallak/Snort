@@ -1,23 +1,18 @@
-تحليل طرود هجمة MS12_020
 
-كان في ترويسة ال TCP:
+in the TCP header:
 
 00 00 02 04 05 b4 04 02 08 0a 00
 
 
-ومن خلال التحليل ظهر لنا عدة ظرود، عندما كانت الوجهة هي المنفذ 3389 كانت ال flags كالتالي:
+Through the analysis, several circumstances appeared to us. When the destination was port 3389, the flags were as follows:
+
 S,A, FA, RA
 
-عندما كان المصدر هو المنفذ 3389 كانت ال flags كالتالي:
+When the source was port 3389, the flags were:
 SA, A, RA, 
 
 
-
-
-من خلال دراسة سلوك الهجمة كانت تعمل على المنفذ 3389
-تم تحليل المرور الشبكي وفقاً لهذا المنفذ فقط
-ليظهر لنا التدفق التالي أثناء تنفيذ الهجمة:
-
+By studying the behavior of the attack that was running on port 3389, the network traffic was analyzed according to this port only, to show us the following flow during the execution of the attack:
 
 20:33:18.346033 IP 192.168.18.129.41554 > 192.168.18.173.3389: Flags [S], seq 2441130760, win 29200, options [mss 1460,sackOK,TS val 1964406 ecr 0,nop,wscale 7], length 0
 	0x0000:  4500 003c 4a7c 4000 4006 49c1 c0a8 1281  E..<J|@.@.I.....
@@ -224,17 +219,7 @@ SA, A, RA,
 
 
 
-
-
-
-
-
-
-
-
-
-وبقراءة ال flags وبالاستعانة بال wireshark وال tcpduml نلاحظ صحة المعطيات السابقة
-لذلك نفرض القواعد التالية ضمن النظام snort:
+By reading the flags and using wireshark and tcpdump, we note the validity of the previous data, so we impose the following rules within the snort system:
 
 alert tcp any any -> any 3389 (msg:"RDP MS12_020 Possible Exploit!"; sid:9911991; flags:S,A;)
 
@@ -249,7 +234,7 @@ alert tcp any 3389 -> any any (msg:"RDP MS12_020 Possible Exploit!"; sid:9911995
 alert tcp any 3389 -> any any (msg:"RDP MS12_020 Possible Exploit!"; sid:9911996; flags:A;)
 
 
-وعند التجريب يطلق التنبيهات التالية:
+When tested, it triggers the following alerts:
 
 04/05-01:35:24.043905 [**] [1:9911991:0] "RDP MS12_020 Possible Exploit!" [**] [Priority: 0] {TCP} 192.168.18.129:39766 -> 192.168.18.173:3389
 04/05-01:35:24.044283 [**] [1:9911995:0] "RDP MS12_020 Possible Exploit!" [**] [Priority: 0] {TCP} 192.168.18.173:3389 -> 192.168.18.129:39766
