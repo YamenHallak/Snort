@@ -1,0 +1,101 @@
+------------------------- TIMING COVERT CHANNEL -----------------------------
+
+في الحاسوب ذو ال IP:
+192.168.18.173
+قمنا بكتابة مقطع الكود التالي ضمن ال winpcap:
+time_t seconds;
+   seconds = time(NULL);
+   //printf("Seconds = %ld\n", seconds);
+
+   int code[10] = {1,0,0,1,1,0,0,0,0,1};            
+   int j=0;   
+   while(j<10)
+   {		
+	   	seconds = time(NULL);
+		printf("Seconds = %ld\n", seconds);		
+		printf("Code[%d] = %d\n", j, code[j] );		
+		if (code[j] == (seconds % 2))
+		{
+			pcap_sendpacket(adhandle , packet , 54);//54 Is The Length Of The Packet
+			printf("Send\n");			
+			j++;
+		}		
+		Sleep(1000);
+   }
+
+بحيث يتم تسريب البيانات من خلال IP Timing Covert Channel
+
+وعند الجهة المقابلة ذات ال IP:
+192.168.18.130
+
+وعند تشغيل التعليمة:
+tcpdump port 5000
+
+نلاحظ الخرج التالي:
+بحيث عندما تكون الساعة بثواني فردية يعني أن هناك 1، وعندما تكون الساعة بثواني زوجية يعني أن هناك 0
+
+
+02:19:59.745656 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 0,
+ win 64240, length 0
+02:20:00.777036 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:02.839291 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:03.840075 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:05.866668 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:06.877823 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:08.876663 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:10.876110 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:12.876174 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+02:20:13.877737 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
+ win 64240, length 0
+
+وبالتالي ماوصل من البتات هو:
+1,0,0,1,1,0,0,0,0,1
+
+كما تم إرسالها من المرسل تماماً
+
+
+
+بملاحظة تحليل المرور الشبكي ومن خلال الطرد المرسل من ال winpcap كان طول ترويسة ال IP هو 20 بايت
+وبما أن الإرسال يتم بمثابة طرد موحّد، فوضعنا القاعدة التالية على نظام Snort:
+alert ip any any -> any any (msg:"Short IP Packet Detected"; dsize:<21;)
+
+
+أطلق التنبيه التالي:
+01/25-18:05:44.341664 [**] [1:0:0] "Short IP Packet Detected" [**] [Priority: 0] {TCP} 192.168.18.173:5000 -> 192.168.18.130:80
+
+
+إنه من الممكن مراقبة المرور الشبكي، ومرة أخرى قمنا بتجريب طرد له نافذه 64240 وطول 0
+فتم تعريف القاعدة التالية:
+alert ip any any -> any any (msg: "Short Packet Detected"; ip_proto:tcp; window:64240; dsize:0; sid:9988534;)
+
+
+ليطلق التنبيه التالي:
+03/12-10:50:48.782154 [**] [1:9988534:0] "Short Packet Detected" [**] [Priority: 0] {TCP} 192.168.18.173:5000 -> 192.168.18.171:80
+
+
+أي أن كشف القناة معتمد على تحليل المرور الشبكي وليس ثابتاً
+
+يمكن تعريف ذات القاعدة عند Suricata ولنا نفس النتيجة.
+
+
+
+
+
+
+
+
+----------------- STORAGE COVERT CHANNEL --------------------
+ببساطة يتم تغيير الحقل TTL أو الحقل TOS في كل مرة قبل الإرسال لنضع فيه الحرف المراد نقله
+
+الكشف تم مناقشته سابقاً
+
+
+
