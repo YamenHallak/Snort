@@ -1,8 +1,8 @@
 ------------------------- TIMING COVERT CHANNEL -----------------------------
-
-في الحاسوب ذو ال IP:
+On a computer with an IP:
 192.168.18.173
-قمنا بكتابة مقطع الكود التالي ضمن ال winpcap:
+We wrote the following code in winpcap:
+
 time_t seconds;
    seconds = time(NULL);
    //printf("Seconds = %ld\n", seconds);
@@ -22,17 +22,16 @@ time_t seconds;
 		}		
 		Sleep(1000);
    }
+   
+So that the data is leaked through IP Timing Covert Channel
 
-بحيث يتم تسريب البيانات من خلال IP Timing Covert Channel
-
-وعند الجهة المقابلة ذات ال IP:
+And on the opposite side of the IP:
 192.168.18.130
 
-وعند تشغيل التعليمة:
+When running the instruction:
 tcpdump port 5000
 
-نلاحظ الخرج التالي:
-بحيث عندما تكون الساعة بثواني فردية يعني أن هناك 1، وعندما تكون الساعة بثواني زوجية يعني أن هناك 0
+We note the following output below, so that when the hour is in odd seconds, it means that there are 1, and when the clock is in even seconds, it means that there are 0
 
 
 02:19:59.745656 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 0,
@@ -55,47 +54,34 @@ tcpdump port 5000
  win 64240, length 0
 02:20:13.877737 IP w7-2.5000 > WIN-OS32J7UJUTG.localdomain.80: Flags [.], ack 1,
  win 64240, length 0
-
-وبالتالي ماوصل من البتات هو:
+ 
+So, the number of bits is:
 1,0,0,1,1,0,0,0,0,1
 
-كما تم إرسالها من المرسل تماماً
+Just as it was sent by the sender
 
+By noting the network traffic analysis and through the packet sent from winpcap, the length of the IP header was 20 bytes
+Since the sending is done as a single packet, we set the following rule on the Snort system:
 
-
-بملاحظة تحليل المرور الشبكي ومن خلال الطرد المرسل من ال winpcap كان طول ترويسة ال IP هو 20 بايت
-وبما أن الإرسال يتم بمثابة طرد موحّد، فوضعنا القاعدة التالية على نظام Snort:
 alert ip any any -> any any (msg:"Short IP Packet Detected"; dsize:<21;)
 
 
-أطلق التنبيه التالي:
+Trigger the following alert:
 01/25-18:05:44.341664 [**] [1:0:0] "Short IP Packet Detected" [**] [Priority: 0] {TCP} 192.168.18.173:5000 -> 192.168.18.130:80
 
 
-إنه من الممكن مراقبة المرور الشبكي، ومرة أخرى قمنا بتجريب طرد له نافذه 64240 وطول 0
-فتم تعريف القاعدة التالية:
+It is possible to monitor network traffic, and again we tested a packet with window 64240 and length 0
+The following rule is defined:
+
 alert ip any any -> any any (msg: "Short Packet Detected"; ip_proto:tcp; window:64240; dsize:0; sid:9988534;)
 
-
-ليطلق التنبيه التالي:
+The following alert is issued:
 03/12-10:50:48.782154 [**] [1:9988534:0] "Short Packet Detected" [**] [Priority: 0] {TCP} 192.168.18.173:5000 -> 192.168.18.171:80
 
+That is, channel detection is based on network traffic analysis and is not fixed
 
-أي أن كشف القناة معتمد على تحليل المرور الشبكي وليس ثابتاً
+The same rule can be defined for Suricata and we have the same result.
 
-يمكن تعريف ذات القاعدة عند Suricata ولنا نفس النتيجة.
-
-
-
-
-
-
-
-
------------------ STORAGE COVERT CHANNEL --------------------
-ببساطة يتم تغيير الحقل TTL أو الحقل TOS في كل مرة قبل الإرسال لنضع فيه الحرف المراد نقله
-
-الكشف تم مناقشته سابقاً
 
 
 
